@@ -5,16 +5,15 @@
   "env_params": {
     "robots": ["IIWA"],
     "has_offscreen_renderer": 0,
-    "use_camera_obs": 0
+    "use_camera_obs": 0,
+    "hard_reset": 0,
+    "horizon": 500,
+    "reward_shaping": 1
   },
   "algo_params": {
     "meta_batch": 4,
-    "num_initial_steps": 2000,
-    "num_steps_prior": 400,
-    "num_steps_posterior": 0,
-    "num_extra_rl_steps_posterior": 600,
-    "num_train_steps_per_itr": 4000,
-    "num_evals": 4,
+    "num_train_steps_per_itr": 1000,
+    "num_evals": 3,
     "num_steps_per_eval": 600,
     "num_exp_traj_eval": 2,
     "embedding_batch_size": 256,

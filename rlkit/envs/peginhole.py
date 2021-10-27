@@ -7,7 +7,7 @@ from . import register_env
 @register_env('peginhole')
 class MultitaskPeginHole(PeginHole):
     def __init__(self, robots, n_tasks=4, randomize_tasks=False, **kwargs):
-        super().__init__(robots, **kwargs)
+        super().__init__(robots, gripper_types=None, **kwargs)
         self._goal = self.peg_class
         self.num_tasks = 4
     

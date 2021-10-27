@@ -18,6 +18,8 @@ from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.transform_utils import quat2axisangle
 from robosuite.wrappers.visualization_wrapper import VisualizationWrapper
 
+from scipy.spatial.transform import Rotation as R
+
 class PeginHole(SingleArmEnv):
     """
     This class corresponds to the peg-in-hole task for a single robot arm.
@@ -160,6 +162,7 @@ class PeginHole(SingleArmEnv):
         self.table_full_size = table_full_size
         self.table_friction = table_friction
         self.table_offset = np.array((0, 0, 0.8))
+        self.threshold = 0.05
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -223,27 +226,29 @@ class PeginHole(SingleArmEnv):
         reward = 0.
 
         # sparse completion reward
-        if self._check_success():
-            reward = 2.25
+        if self._check_success(self.threshold):
+            reward = 2.0
 
         # use a shaping reward
         elif self.reward_shaping:
 
-            # reaching reward
-            cube_pos = self.sim.data.body_xpos[self.cube_body_id]
-            gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-            dist = np.linalg.norm(gripper_site_pos - cube_pos)
-            reaching_reward = 1 - np.tanh(10.0 * dist)
-            reward += reaching_reward
+            # in hole but not reach threshold
+            if self._check_success(threshold=0.0):
+                reward = 1.0
 
-            # grasping reward
-            if self._check_grasp(gripper=self.robots[0].gripper, object_geoms=self.cube):
-                reward += 0.25
+            # not in hole
+            else:
+                peg_bottom_pos = self.get_peg_bottom_pos()
+                hole_pos = self.sim.data.body_xpos[self.hole_body_id]
+                hole_pos[0] += 0.11
+                dist = np.linalg.norm(peg_bottom_pos - hole_pos)
+    
+                reaching_reward = 1 - np.tanh(10.0 * dist)
+                reward = reaching_reward
 
         # Scale reward if requested
         if self.reward_scale is not None:
-            reward *= self.reward_scale / 2.25
-
+            reward *= self.reward_scale / 2.0
         return reward
 
     def _load_model(self):
@@ -326,8 +331,8 @@ class PeginHole(SingleArmEnv):
 
         # load hole object
         hole_obj = self.hole.get_obj()
-        hole_obj.set("quat", "0 0 0 1")
-        hole_obj.set("pos", "0. 0 0.85")
+        hole_obj.set("quat", "0 0 0 0")
+        hole_obj.set("pos", "-0.2 0 0.90")
 
         # load peg object
         peg_obj = self.peg.get_obj()
@@ -392,7 +397,7 @@ class PeginHole(SingleArmEnv):
             def hole_quat(obs_cache):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.hole_body_id]), to="xyzw")
 
-            sensors = [peg_pos, peg_quat, hole_pos, hole_quat]
+            sensors = [peg_pos, peg_quat]
             names = [s.__name__ for s in sensors]
 
             # Create observables
@@ -411,19 +416,19 @@ class PeginHole(SingleArmEnv):
         """
         super()._reset_internal()
 
-
-    def _check_success(self):
+    def _check_success(self, threshold=0.0):
         """
         Check if peg is inserted into the hole.
         """
         # cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
         # table_height = self.model.mujoco_arena.table_offset[2]
-
+    
         # cube is higher than the table top above a margin
         # return cube_height > table_height + 0.04
-        obs = self._get_observations()
-        peg_pos = obs["peg_pos"]
-        if np.abs(peg_pos[0]) < 5e-3 and np.abs(peg_pos[1]) < 5e-3 and peg_pos[2] < 0.88:
+        peg_bottom_pos = self.get_peg_bottom_pos()
+        hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
+        hole_pos[0] += 0.11
+        if np.abs(peg_bottom_pos[0] - hole_pos[0]) < 5e-3 and np.abs(peg_bottom_pos[1] - hole_pos[1]) < 5e-3 and peg_bottom_pos[2] < hole_pos[2] - threshold:
             return True
         else:
             return False
@@ -438,14 +443,16 @@ class PeginHole(SingleArmEnv):
         robot_euler = quat2axisangle(robot_quat)
         robot_6d_pose = np.hstack((robot_pos, robot_euler))
         return robot_6d_pose
-
-    def check_insertion_success(self):
+    
+    def get_peg_bottom_pos(self):
         obs = self._get_observations()
-        peg_pos = obs["peg_pos"]
-        if np.abs(peg_pos[0]) < 5e-3 and np.abs(peg_pos[1]) < 5e-3 and peg_pos[2] < 0.87:
-            return True
-        else:
-            return False
+        peg_vec = np.array([0, 0, 0.08])
+        peg_pos = obs['peg_pos']
+        peg_quat = obs['peg_quat']
+        peg_bottom_pos = R.from_quat(peg_quat).as_matrix() @ peg_vec + peg_pos
+        return peg_bottom_pos
+        
+
 
 if __name__ == "__main__":
     def get_policy_action(obs):
