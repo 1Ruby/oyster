@@ -157,12 +157,13 @@ class PeginHole(SingleArmEnv):
         camera_widths=256,
         camera_depths=False,
         peg_class=0,
+        threshold=0.1
     ):
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
         self.table_offset = np.array((0, 0, 0.8))
-        self.threshold = 0.05
+        self.threshold = threshold
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -224,31 +225,34 @@ class PeginHole(SingleArmEnv):
             float: reward value
         """
         reward = 0.
+        max_reward = 10.0
 
         # sparse completion reward
         if self._check_success(self.threshold):
-            reward = 2.0
+            reward = max_reward
 
         # use a shaping reward
         elif self.reward_shaping:
+            peg_bottom_pos = self.get_peg_bottom_pos()
+            hole_pos = self.sim.data.body_xpos[self.hole_body_id]
+            hole_pos[0] += 0.11
 
             # in hole but not reach threshold
             if self._check_success(threshold=0.0):
                 reward = 1.0
+                depth = hole_pos[2] - peg_bottom_pos[2]
+                reward += depth / self.threshold * (max_reward - reward)
+                reward = np.min(reward, max_reward)
 
             # not in hole
             else:
-                peg_bottom_pos = self.get_peg_bottom_pos()
-                hole_pos = self.sim.data.body_xpos[self.hole_body_id]
-                hole_pos[0] += 0.11
                 dist = np.linalg.norm(peg_bottom_pos - hole_pos)
-    
                 reaching_reward = 1 - np.tanh(10.0 * dist)
                 reward = reaching_reward
 
         # Scale reward if requested
         if self.reward_scale is not None:
-            reward *= self.reward_scale / 2.0
+            reward *= self.reward_scale / max_reward
         return reward
 
     def _load_model(self):
@@ -292,7 +296,7 @@ class PeginHole(SingleArmEnv):
 
         # determine the clearance of the peg
         if self.peg_class == 0:
-            self.peg_radious, self.peg_length = 0.0285, 0.08 # 0.057 diameter, 0.003m clearance
+            self.peg_radious, self.peg_length = 0.0485, 0.08 # 0.057 diameter, 0.003m clearance
             self.peg = CylinderObject(
                 name="peg",
                 size_min=(self.peg_radious, self.peg_length),
@@ -301,7 +305,7 @@ class PeginHole(SingleArmEnv):
                 rgba=[0, 1, 0, 1],
                 joints=None,)
         if self.peg_class == 1:
-            self.peg_radious, self.peg_length = 0.0295, 0.08 # 0.001m clearance
+            self.peg_radious, self.peg_length = 0.0495, 0.08 # 0.001m clearance
             self.peg = CylinderObject(
                 name="peg",
                 size_min=(self.peg_radious, self.peg_length),
@@ -310,7 +314,7 @@ class PeginHole(SingleArmEnv):
                 rgba=[0, 1, 0, 1],
                 joints=None,)
         if self.peg_class == 2:
-            self.peg_radious, self.peg_length = 0.0298, 0.08 # 0.0004m clearance
+            self.peg_radious, self.peg_length = 0.0498, 0.08 # 0.0004m clearance
             self.peg = CylinderObject(
                 name="peg",
                 size_min=(self.peg_radious, self.peg_length),
@@ -319,7 +323,7 @@ class PeginHole(SingleArmEnv):
                 rgba=[0, 1, 0, 1],
                 joints=None,)
         if self.peg_class == 3:
-            self.peg_halfx, self.peg_halfy, self.peg_length = 0.0295, 0.0295, 0.08  # 1mm clearance
+            self.peg_halfx, self.peg_halfy, self.peg_length = 0.0495, 0.0495, 0.08  # 1mm clearance
             self.peg = BoxObject(
                 name="peg",
                 size=(self.peg_halfx, self.peg_halfy, self.peg_length),
