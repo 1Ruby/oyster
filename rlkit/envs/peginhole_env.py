@@ -129,64 +129,64 @@ class PeginHole(SingleArmEnv):
     """
 
     def __init__(
-        self,
-        robots,
-        env_configuration="default",
-        controller_configs=None,
-        gripper_types="default",
-        initialization_noise="default",
-        table_full_size=(0.8, 0.8, 0.05),
-        table_friction=(1., 5e-3, 1e-4),
-        use_camera_obs=True,
-        use_object_obs=True,
-        reward_scale=1.0,
-        reward_shaping=False,
-        placement_initializer=None,
-        has_renderer=False,
-        has_offscreen_renderer=True,
-        render_camera="frontview",
-        render_collision_mesh=False,
-        render_visual_mesh=True,
-        render_gpu_device_id=-1,
-        control_freq=20,
-        horizon=1000,
-        ignore_done=False,
-        hard_reset=True,
-        camera_names="agentview",
-        camera_heights=256,
-        camera_widths=256,
-        camera_depths=False,
-        peg_class=0,
-        threshold=0.1
+            self,
+            robots,
+            env_configuration="default",
+            controller_configs=None,
+            gripper_types="default",
+            initialization_noise="default",
+            table_full_size=(0.8, 0.8, 0.05),
+            table_friction=(1., 5e-3, 1e-4),
+            use_camera_obs=True,
+            use_object_obs=True,
+            reward_scale=1.0,
+            reward_shaping=False,
+            placement_initializer=None,
+            has_renderer=False,
+            has_offscreen_renderer=True,
+            render_camera="frontview",
+            render_collision_mesh=False,
+            render_visual_mesh=True,
+            render_gpu_device_id=-1,
+            control_freq=20,
+            horizon=1000,
+            ignore_done=False,
+            hard_reset=True,
+            camera_names="agentview",
+            camera_heights=256,
+            camera_widths=256,
+            camera_depths=False,
+            peg_class=0,
+            threshold=0.1
     ):
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
         self.table_offset = np.array((0, 0, 0.8))
         self.threshold = threshold
-
+        
         # reward configuration
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
-
+        
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
-
+        
         # object placement initializer
         self.placement_initializer = placement_initializer
-
+        
         self.peg_class = peg_class
-
+        
         self.headless = has_offscreen_renderer
-
+        
         # set up controller, seen in peginhole_controller.json
         # Operational Space Control with variable stiffness is used as default
-        # ctrl_fpath = os.path.join(
-        #     os.path.dirname(os.path.abspath(__file__)), "peginhole_controller.json")
-        # controller_configs = load_controller_config(custom_fpath=ctrl_fpath)
-        controller_configs = None
+        ctrl_fpath = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "peginhole_controller.json")
+        controller_configs = load_controller_config(custom_fpath=ctrl_fpath)
+        # controller_configs = None
         # import pdb; pdb.set_trace()
-
+        
         super().__init__(
             robots=robots,
             env_configuration=env_configuration,
@@ -210,7 +210,7 @@ class PeginHole(SingleArmEnv):
             camera_widths=camera_widths,
             camera_depths=camera_depths,
         )
-        
+    
     def reward(self, action=None):
         """
         Reward function for the task.
@@ -225,46 +225,48 @@ class PeginHole(SingleArmEnv):
             float: reward value
         """
         reward = 0.
-        max_reward = 10.0
-
+        max_reward = 100.0
+        
         # sparse completion reward
         if self._check_success(self.threshold):
             reward = max_reward
-
+        
         # use a shaping reward
         elif self.reward_shaping:
             peg_bottom_pos = self.get_peg_bottom_pos()
-            hole_pos = self.sim.data.body_xpos[self.hole_body_id]
+            hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
             hole_pos[0] += 0.11
-
+            
             # in hole but not reach threshold
-            if self._check_success(threshold=0.0):
-                reward = 1.0
+            if self._check_success(0.0):
+                reward = 10.0
                 depth = hole_pos[2] - peg_bottom_pos[2]
                 reward += depth / self.threshold * (max_reward - reward)
-                reward = np.min(reward, max_reward)
-
+                reward = np.min([reward, max_reward])
+            
             # not in hole
             else:
                 dist = np.linalg.norm(peg_bottom_pos - hole_pos)
+                obs = self._get_observations()
+                delta = np.abs(np.arccos(obs['peg_quat'][-1]) * 2 - np.pi)  # tilt angle
                 reaching_reward = 1 - np.tanh(10.0 * dist)
-                reward = reaching_reward
-
+                reward = reaching_reward - 10 * delta
+        
         # Scale reward if requested
         if self.reward_scale is not None:
             reward *= self.reward_scale / max_reward
         return reward
-
+    
     def _load_model(self):
         """
         Loads an xml model, puts it in self.model
         """
         super()._load_model()
-
+        
         # Adjust base pose accordingly
         xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
         self.robots[0].robot_model.set_base_xpos(xpos)
-
+        
         # load model for table top workspace
         # mujoco_arena = TableArena(
         #     table_full_size=self.table_full_size,
@@ -272,12 +274,12 @@ class PeginHole(SingleArmEnv):
         #     table_offset=self.table_offset,
         # )
         mujoco_arena = EmptyArena()
-
+        
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])
-
+        
         # initialize objects of interest
-        self.hole = PlateWithHoleObject(name="hole") # 0.06m * 0.06m square clearance 
+        self.hole = PlateWithHoleObject(name="hole")  # 0.06m * 0.06m square clearance
         tex_attrib = {
             "type": "cube",
         }
@@ -293,35 +295,35 @@ class PeginHole(SingleArmEnv):
             tex_attrib=tex_attrib,
             mat_attrib=mat_attrib,
         )
-
+        
         # determine the clearance of the peg
         if self.peg_class == 0:
-            self.peg_radious, self.peg_length = 0.0485, 0.08 # 0.057 diameter, 0.003m clearance
+            self.peg_radious, self.peg_length = 0.0475, 0.08  # 0.095 diameter, 0.005m clearance
             self.peg = CylinderObject(
                 name="peg",
                 size_min=(self.peg_radious, self.peg_length),
                 size_max=(self.peg_radious, self.peg_length),
                 material=greenwood,
                 rgba=[0, 1, 0, 1],
-                joints=None,)
+                joints=None, )
         if self.peg_class == 1:
-            self.peg_radious, self.peg_length = 0.0495, 0.08 # 0.001m clearance
+            self.peg_radious, self.peg_length = 0.048, 0.08  # 0.004m clearance
             self.peg = CylinderObject(
                 name="peg",
                 size_min=(self.peg_radious, self.peg_length),
                 size_max=(self.peg_radious, self.peg_length),
                 material=greenwood,
                 rgba=[0, 1, 0, 1],
-                joints=None,)
+                joints=None, )
         if self.peg_class == 2:
-            self.peg_radious, self.peg_length = 0.0498, 0.08 # 0.0004m clearance
+            self.peg_radious, self.peg_length = 0.0485, 0.08  # 0.003m clearance
             self.peg = CylinderObject(
                 name="peg",
                 size_min=(self.peg_radious, self.peg_length),
                 size_max=(self.peg_radious, self.peg_length),
                 material=greenwood,
                 rgba=[0, 1, 0, 1],
-                joints=None,)
+                joints=None, )
         if self.peg_class == 3:
             self.peg_halfx, self.peg_halfy, self.peg_length = 0.0495, 0.0495, 0.08  # 1mm clearance
             self.peg = BoxObject(
@@ -337,26 +339,26 @@ class PeginHole(SingleArmEnv):
         hole_obj = self.hole.get_obj()
         hole_obj.set("quat", "0 0 0 0")
         hole_obj.set("pos", "-0.2 0 0.90")
-
+        
         # load peg object
         peg_obj = self.peg.get_obj()
         peg_obj.set("pos", array_to_string((0, 0, self.peg_length)))
-
+        
         # Append peg to robot ee
         robot_eef = self.robots[0].robot_model.eef_name
         robot_model = self.robots[0].robot_model
         robot_body = find_elements(robot_model.worldbody, tags="body", attribs={"name": robot_eef}, return_first=True)
         robot_body.append(peg_obj)
-
+        
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
             mujoco_arena=mujoco_arena,
-            mujoco_robots=[robot.robot_model for robot in self.robots], 
+            mujoco_robots=[robot.robot_model for robot in self.robots],
             mujoco_objects=self.hole,
         )
-
+        
         self.model.merge_assets(self.peg)
-
+    
     def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an
@@ -364,11 +366,11 @@ class PeginHole(SingleArmEnv):
         in a flatten array, which is how MuJoCo stores physical simulation data.
         """
         super()._setup_references()
-
+        
         # Additional object references from this env
         self.peg_body_id = self.sim.model.body_name2id(self.peg.root_body)
         self.hole_body_id = self.sim.model.body_name2id(self.hole.root_body)
-
+    
     def _setup_observables(self):
         """
         Sets up observables to be used for this environment. Creates object-based observables if enabled
@@ -377,18 +379,18 @@ class PeginHole(SingleArmEnv):
             OrderedDict: Dictionary mapping observable names to its corresponding Observable object
         """
         observables = super()._setup_observables()
-
+        
         # low-level object information
         if self.use_object_obs:
             # Get robot prefix and define observables modality
             pf = self.robots[0].robot_model.naming_prefix
             modality = "object"
-
+            
             # peg hole-related observables
             @sensor(modality=modality)
             def peg_pos(obs_cache):
                 return np.array(self.sim.data.body_xpos[self.peg_body_id])
-
+            
             @sensor(modality=modality)
             def peg_quat(obs_cache):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.peg_body_id]), to="xyzw")
@@ -396,14 +398,14 @@ class PeginHole(SingleArmEnv):
             @sensor(modality=modality)
             def hole_pos(obs_cache):
                 return np.array(self.sim.data.body_xpos[self.hole_body_id])
-
+            
             @sensor(modality=modality)
             def hole_quat(obs_cache):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.hole_body_id]), to="xyzw")
-
+            
             sensors = [peg_pos, peg_quat]
             names = [s.__name__ for s in sensors]
-
+            
             # Create observables
             for name, s in zip(names, sensors):
                 observables[name] = Observable(
@@ -411,32 +413,38 @@ class PeginHole(SingleArmEnv):
                     sensor=s,
                     sampling_rate=self.control_freq,
                 )
-
+        
         return observables
-
+    
     def _reset_internal(self):
         """
         Resets simulation internal configurations.
         """
         super()._reset_internal()
-
-    def _check_success(self, threshold=0.0):
+    
+    def _check_success(self, threshold=None):
         """
         Check if peg is inserted into the hole.
         """
         # cube_height = self.sim.data.body_xpos[self.cube_body_id][2]
         # table_height = self.model.mujoco_arena.table_offset[2]
-    
+        
         # cube is higher than the table top above a margin
         # return cube_height > table_height + 0.04
+        if threshold is not None:
+            threshold = self.threshold
         peg_bottom_pos = self.get_peg_bottom_pos()
+        obs = self._get_observations()
+        peg_pos = obs['peg_pos']
+        # peg center
         hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
         hole_pos[0] += 0.11
-        if np.abs(peg_bottom_pos[0] - hole_pos[0]) < 5e-3 and np.abs(peg_bottom_pos[1] - hole_pos[1]) < 5e-3 and peg_bottom_pos[2] < hole_pos[2] - threshold:
+        if np.abs(peg_pos[0] - hole_pos[0]) < 5e-3 and np.abs(peg_pos[1] - hole_pos[1]) < 5e-3 and \
+                peg_bottom_pos[2] < hole_pos[2] - threshold:
             return True
         else:
             return False
-
+    
     def get_robot_pose_6d(self):
         """
         Return the current robot pose in 6d (position + euler) in world frame
@@ -455,28 +463,34 @@ class PeginHole(SingleArmEnv):
         peg_quat = obs['peg_quat']
         peg_bottom_pos = R.from_quat(peg_quat).as_matrix() @ peg_vec + peg_pos
         return peg_bottom_pos
-        
 
 
 if __name__ == "__main__":
+    import pdb
+    
+    
     def get_policy_action(obs):
         low, high = env.action_spec
         return np.random.uniform(low, high)
-
+    
+    
     from robosuite.environments.manipulation.lift import Lift
+    
     # env = Lift(robots="IIWA", initialization_noise=None, has_renderer=True, has_offscreen_renderer=False, use_camera_obs=False)
-    env = PeginHole(robots=["IIWA"], gripper_types=None, initialization_noise=None, has_renderer=True, render_camera="frontview", has_offscreen_renderer=False, use_camera_obs=False)
+    env = PeginHole(robots=["IIWA"], gripper_types=None, initialization_noise=None, has_renderer=True,
+                    render_camera="sideview", has_offscreen_renderer=False, use_camera_obs=False, reward_shaping=True,
+                    reward_scale=None, peg_class=3)
     env = VisualizationWrapper(env)
     obs = env.reset()
-    done=False
-    for i in range(400):
-        action = get_policy_action(obs)
-        print(action)
+    done = False
+    peg_vec = np.array([0, 0, 0.08])
+    for i in range(1000):
+        action = np.zeros(6)
         obs, r, done, _ = env.step(action)
+        print(r)
         env.render()
-        # import pdb; pdb.set_trace()
-
-
+        # pdb.set_trace()
+    
     '''
     import numpy as np
     import robosuite as suite
