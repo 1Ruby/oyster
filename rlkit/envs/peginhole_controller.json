@@ -2,6 +2,6 @@
   "type": "OSC_POSE",
   "interpolation": "linear",
   "ramp_ratio": 0.1,
-  "impedance_mode": "variable_kp",
+  "impedance_mode": "fixed",
   "control_delta": false
 }
