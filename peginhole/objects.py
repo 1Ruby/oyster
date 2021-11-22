@@ -3,7 +3,7 @@ from pathlib import Path
 from robosuite.models.objects import MujocoXMLObject
 from robosuite.utils.mjcf_utils import xml_path_completion, array_to_string, find_elements
 
-asset_path = lambda obj_id, obj_type: "./assets/"+str(obj_id)+"/"+obj_type+".xml"
+asset_path = lambda obj_id, obj_type: "peginhole/assets/"+str(obj_id)+"/"+obj_type+".xml"
 
 class Hole0(MujocoXMLObject):
     def __init__(self, name):

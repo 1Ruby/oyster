@@ -19,7 +19,7 @@ from robosuite.utils.transform_utils import quat2axisangle
 from robosuite.wrappers.visualization_wrapper import VisualizationWrapper
 
 from scipy.spatial.transform import Rotation as R
-from objects import *
+from .objects import *
 
 class PeginHole(SingleArmEnv):
     """

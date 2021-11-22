@@ -1,21 +1,13 @@
 import numpy as np
 
-from peginhole_env import *
+from .peginhole_env import *
 from gym import spaces
-from ..rlkit.envs import register_env
 
-def flatten_obs(ob_dict):
-    ob_list = []
-    for key in ob_dict:
-        ob_list.append(ob_dict[key].flatten())
-    return np.concatenate(ob_list)
-
-@register_env('peginhole')
 class MultitaskPeginHole(PeginHole):
-    def __init__(self, robots, n_tasks=4, randomize_tasks=False, **kwargs):
+    def __init__(self, robots, n_tasks=3, randomize_tasks=False, **kwargs):
         super().__init__(robots, gripper_types=None, **kwargs)
         self._goal = self.peg_class
-        self.num_tasks = 4
+        self.num_tasks = 3
     
     def get_all_task_idx(self):
         return range(self.num_tasks)
@@ -30,6 +22,12 @@ class MultitaskPeginHole(PeginHole):
             self._observables = self._setup_observables()
         self._goal = self.peg_class
         self.reset()
+    
+    def _flatten_obs(self, ob_dict):
+        ob_list = []
+        for key in ob_dict:
+            ob_list.append(ob_dict[key].flatten())
+        return np.concatenate(ob_list)
         
     @property
     def observation_space(self):
@@ -47,7 +45,7 @@ class MultitaskPeginHole(PeginHole):
     
     def reset(self):
         ob_dict = super().reset()
-        return flatten_obs(ob_dict)
+        return self._flatten_obs(ob_dict)
     
     def step(self, action):
         if self._check_success():
@@ -55,6 +53,6 @@ class MultitaskPeginHole(PeginHole):
             ob_dict, reward, done, info = super().step(action_zero)
         else:
             ob_dict, reward, done, info = super().step(action)
-        return flatten_obs(ob_dict), reward, done, info
+        return self._flatten_obs(ob_dict), reward, done, info
     
         

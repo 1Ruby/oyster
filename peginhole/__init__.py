@@ -1,1 +1,1 @@
-import peginhole.peginhole
+from .peginhole import MultitaskPeginHole
