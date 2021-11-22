@@ -134,7 +134,7 @@ class CameraWrapper(object):
         self._wrapped_env = env
         self.initialize_camera()
 
-    def get_image(self, width=256, height=256, camera_name=None):
+    def get_image(self, width=1024, height=1024, camera_name="sideview"):
         # use sim.render to avoid MJViewer which doesn't seem to work without display
         return self.sim.render(
             width=width,

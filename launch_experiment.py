@@ -20,7 +20,7 @@ import rlkit.torch.pytorch_util as ptu
 from configs.default import default_config
 
 
-def experiment(variant):
+def experiment(variant, exp_id):
 
     # create multi-task environment and sample tasks
     env = NormalizedBoxEnv(ENVS[variant['env_name']](**variant['env_params']))
@@ -100,7 +100,7 @@ def experiment(variant):
 
     # create logging directory
     # TODO support Docker
-    exp_id = 'debug' if DEBUG else None
+    exp_id = 'debug' if DEBUG else exp_id
     experiment_log_dir = setup_logger(variant['env_name'], variant=variant, exp_id=exp_id, base_log_dir=variant['util_params']['base_log_dir'])
 
     # optionally save eval trajectories as pkl files
@@ -126,7 +126,8 @@ def deep_update_dict(fr, to):
 @click.option('--gpu', default=0)
 @click.option('--docker', is_flag=True, default=False)
 @click.option('--debug', is_flag=True, default=False)
-def main(config, gpu, docker, debug):
+@click.option('--exp_id', default=None)
+def main(config, gpu, docker, debug, exp_id):
 
     variant = default_config
     if config:
@@ -135,7 +136,7 @@ def main(config, gpu, docker, debug):
         variant = deep_update_dict(exp_params, variant)
     variant['util_params']['gpu_id'] = gpu
 
-    experiment(variant)
+    experiment(variant, exp_id)
 
 if __name__ == "__main__":
     main()
