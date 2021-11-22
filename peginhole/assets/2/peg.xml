@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<mujoco model="peg2">
+    <asset>
+        <mesh file="peg/0.stl" name="mesh_0"/>
+        <mesh file="peg/1.stl" name="mesh_1"/>
+        <mesh file="peg/2.stl" name="mesh_2"/>
+        <mesh file="peg/3.stl" name="mesh_3"/>
+        <mesh file="peg/4.stl" name="mesh_4"/>
+        <mesh file="peg/5.stl" name="mesh_5"/>
+        <texture file="../texture/green-wood.png" name="green-wood"/>
+        <material name="greenwood_mat" texture="green-wood" texrepeat="1 1" specular="0.4" shininess="0.1"/>
+    </asset>
+    <worldbody>
+        <body>
+            <body name="object">
+                <geom mesh="mesh_0" type="mesh" group="0" material="greenwood_mat"/>
+                <geom mesh="mesh_1" type="mesh" group="0" material="greenwood_mat"/>
+                <geom mesh="mesh_2" type="mesh" group="0" material="greenwood_mat"/>
+                <geom mesh="mesh_3" type="mesh" group="0" material="greenwood_mat"/>
+                <geom mesh="mesh_4" type="mesh" group="0" material="greenwood_mat"/>
+                <geom mesh="mesh_5" type="mesh" group="0" material="greenwood_mat"/>
+            </body>
+        </body>
+    </worldbody>
+</mujoco>
