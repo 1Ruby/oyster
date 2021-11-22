@@ -5,14 +5,6 @@ from robosuite.utils.mjcf_utils import xml_path_completion, array_to_string, fin
 
 asset_path = lambda obj_id, obj_type: "./assets/"+str(obj_id)+"/"+obj_type+".xml"
 
-class TestHole(MujocoXMLObject):
-    def __init__(self, name):
-        super().__init__(asset_path("test", "hole"), name=name, joints=None)
-        
-class TestPeg(MujocoXMLObject):
-    def __init__(self, name):
-        super().__init__(asset_path("test", "peg"), name=name, joints=None)
-
 class Hole0(MujocoXMLObject):
     def __init__(self, name):
         super().__init__(asset_path(0, "hole"), name=name, joints=None)
