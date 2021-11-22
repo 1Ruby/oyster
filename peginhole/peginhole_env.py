@@ -19,6 +19,7 @@ from robosuite.utils.transform_utils import quat2axisangle
 from robosuite.wrappers.visualization_wrapper import VisualizationWrapper
 
 from scipy.spatial.transform import Rotation as R
+from objects import *
 
 class PeginHole(SingleArmEnv):
     """
@@ -234,21 +235,20 @@ class PeginHole(SingleArmEnv):
         # use a shaping reward
         elif self.reward_shaping:
             peg_bottom_pos = self.get_peg_bottom_pos()
-            hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
-            hole_pos[0] += 0.11
+            hole_center = self.get_hole_center()
+            dist = np.linalg.norm(peg_bottom_pos - hole_center)
+            obs = self._get_observations()
+            delta = np.abs(np.arccos(obs['peg_quat'][-1]) * 2 - np.pi)  # tilt angle
             
             # in hole but not reach threshold
             if self._check_success(0.0):
                 reward = 10.0
-                depth = hole_pos[2] - peg_bottom_pos[2]
+                depth = hole_center[2] - peg_bottom_pos[2]
                 reward += depth / self.threshold * (max_reward - reward)
                 reward = np.min([reward, max_reward])
             
             # not in hole
             else:
-                dist = np.linalg.norm(peg_bottom_pos - hole_pos)
-                obs = self._get_observations()
-                delta = np.abs(np.arccos(obs['peg_quat'][-1]) * 2 - np.pi)  # tilt angle
                 reaching_reward = 1 - np.tanh(10.0 * dist)
                 reward = reaching_reward - 10 * delta
         
@@ -279,66 +279,23 @@ class PeginHole(SingleArmEnv):
         mujoco_arena.set_origin([0, 0, 0])
         
         # initialize objects of interest
-        self.hole = PlateWithHoleObject(name="hole")  # 0.06m * 0.06m square clearance
-        tex_attrib = {
-            "type": "cube",
-        }
-        mat_attrib = {
-            "texrepeat": "1 1",
-            "specular": "0.4",
-            "shininess": "0.1",
-        }
-        greenwood = CustomMaterial(
-            texture="WoodGreen",
-            tex_name="greenwood",
-            mat_name="greenwood_mat",
-            tex_attrib=tex_attrib,
-            mat_attrib=mat_attrib,
-        )
+        self.hole = Hole0(name="hole")  # 0.06m * 0.06m square clearance
+        self.peg_length = 0.08
         
         # determine the clearance of the peg
         if self.peg_class == 0:
-            self.peg_radious, self.peg_length = 0.0475, 0.08  # 0.095 diameter, 0.005m clearance
-            self.peg = CylinderObject(
-                name="peg",
-                size_min=(self.peg_radious, self.peg_length),
-                size_max=(self.peg_radious, self.peg_length),
-                material=greenwood,
-                rgba=[0, 1, 0, 1],
-                joints=None, )
+            self.peg = Peg0(name='peg')
+            self.hole = Hole0(name='hole')
         if self.peg_class == 1:
-            self.peg_radious, self.peg_length = 0.048, 0.08  # 0.004m clearance
-            self.peg = CylinderObject(
-                name="peg",
-                size_min=(self.peg_radious, self.peg_length),
-                size_max=(self.peg_radious, self.peg_length),
-                material=greenwood,
-                rgba=[0, 1, 0, 1],
-                joints=None, )
+            self.peg = Peg1(name='peg')
+            self.hole = Hole1(name='hole')
         if self.peg_class == 2:
-            self.peg_radious, self.peg_length = 0.0485, 0.08  # 0.003m clearance
-            self.peg = CylinderObject(
-                name="peg",
-                size_min=(self.peg_radious, self.peg_length),
-                size_max=(self.peg_radious, self.peg_length),
-                material=greenwood,
-                rgba=[0, 1, 0, 1],
-                joints=None, )
-        if self.peg_class == 3:
-            self.peg_halfx, self.peg_halfy, self.peg_length = 0.0495, 0.0495, 0.08  # 1mm clearance
-            self.peg = BoxObject(
-                name="peg",
-                size=(self.peg_halfx, self.peg_halfy, self.peg_length),
-                material=greenwood,
-                rgba=[0, 1, 0, 1],
-                joints=None,
-                )
-
+            self.peg = Peg2(name='peg')
+            self.hole = Hole2(name='hole')
 
         # load hole object
         hole_obj = self.hole.get_obj()
-        hole_obj.set("quat", "0 0 0 0")
-        hole_obj.set("pos", "-0.2 0 0.90")
+        hole_obj.set("pos", "-0.09 0 0.80")
         
         # load peg object
         peg_obj = self.peg.get_obj()
@@ -431,16 +388,16 @@ class PeginHole(SingleArmEnv):
         
         # cube is higher than the table top above a margin
         # return cube_height > table_height + 0.04
-        if threshold is not None:
+        if threshold is None:
             threshold = self.threshold
         peg_bottom_pos = self.get_peg_bottom_pos()
         obs = self._get_observations()
+        delta = np.abs(np.arccos(obs['peg_quat'][-1]) * 2 - np.pi)  # tilt angle
         peg_pos = obs['peg_pos']
         # peg center
-        hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
-        hole_pos[0] += 0.11
-        if np.abs(peg_pos[0] - hole_pos[0]) < 5e-3 and np.abs(peg_pos[1] - hole_pos[1]) < 5e-3 and \
-                peg_bottom_pos[2] < hole_pos[2] - threshold:
+        hole_center = self.get_hole_center()
+        if np.abs(peg_pos[0] - hole_center[0]) < 2e-2 and np.abs(peg_pos[1] - hole_center[1]) < 2e-2 and \
+                peg_bottom_pos[2] < hole_center[2] - threshold and delta <= 0.7:
             return True
         else:
             return False
@@ -456,9 +413,14 @@ class PeginHole(SingleArmEnv):
         robot_6d_pose = np.hstack((robot_pos, robot_euler))
         return robot_6d_pose
     
+    def get_hole_center(self):
+        hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
+        hole_pos[2] += 0.1
+        return hole_pos
+    
     def get_peg_bottom_pos(self):
         obs = self._get_observations()
-        peg_vec = np.array([0, 0, 0.08])
+        peg_vec = np.array([0, 0, self.peg_length])
         peg_pos = obs['peg_pos']
         peg_quat = obs['peg_quat']
         peg_bottom_pos = R.from_quat(peg_quat).as_matrix() @ peg_vec + peg_pos
@@ -478,15 +440,15 @@ if __name__ == "__main__":
     
     # env = Lift(robots="IIWA", initialization_noise=None, has_renderer=True, has_offscreen_renderer=False, use_camera_obs=False)
     env = PeginHole(robots=["IIWA"], gripper_types=None, initialization_noise=None, has_renderer=True,
-                    render_camera="sideview", has_offscreen_renderer=False, use_camera_obs=False, reward_shaping=True,
-                    reward_scale=None, peg_class=3)
+                    render_camera=None, has_offscreen_renderer=False, use_camera_obs=False, reward_shaping=True,
+                    reward_scale=None, peg_class=1)
     env = VisualizationWrapper(env)
     obs = env.reset()
     done = False
-    peg_vec = np.array([0, 0, 0.08])
     for i in range(1000):
-        action = np.zeros(6)
+        action = np.array([0, 0, 0.5, 0, 0, 0])
         obs, r, done, _ = env.step(action)
+        print(env.env.get_peg_bottom_pos())
         print(r)
         env.render()
         # pdb.set_trace()

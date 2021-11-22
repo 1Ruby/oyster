@@ -1,8 +1,14 @@
 import numpy as np
 
-from .peginhole_env import *
+from peginhole_env import *
 from gym import spaces
-from . import register_env
+from ..rlkit.envs import register_env
+
+def flatten_obs(ob_dict):
+    ob_list = []
+    for key in ob_dict:
+        ob_list.append(ob_dict[key].flatten())
+    return np.concatenate(ob_list)
 
 @register_env('peginhole')
 class MultitaskPeginHole(PeginHole):
@@ -25,12 +31,6 @@ class MultitaskPeginHole(PeginHole):
         self._goal = self.peg_class
         self.reset()
         
-    def _flatten_obs(self, ob_dict):
-        ob_list = []
-        for key in ob_dict:
-            ob_list.append(ob_dict[key].flatten())
-        return np.concatenate(ob_list)
-        
     @property
     def observation_space(self):
         ob_dict = self.observation_spec()
@@ -47,10 +47,14 @@ class MultitaskPeginHole(PeginHole):
     
     def reset(self):
         ob_dict = super().reset()
-        return self._flatten_obs(ob_dict)
+        return flatten_obs(ob_dict)
     
     def step(self, action):
-        ob_dict, reward, done, info = super().step(action)
-        return self._flatten_obs(ob_dict), reward, done, info
+        if self._check_success():
+            action_zero = np.zeros_like(action)
+            ob_dict, reward, done, info = super().step(action_zero)
+        else:
+            ob_dict, reward, done, info = super().step(action)
+        return flatten_obs(ob_dict), reward, done, info
     
         

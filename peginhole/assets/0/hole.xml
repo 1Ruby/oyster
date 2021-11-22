@@ -1,0 +1,121 @@
+<?xml version="1.0" ?>
+<mujoco model="hole_0">
+    <asset>
+        <mesh file="hole/0.stl" name="mesh_0"/>
+        <mesh file="hole/1.stl" name="mesh_1"/>
+        <mesh file="hole/2.stl" name="mesh_2"/>
+        <mesh file="hole/3.stl" name="mesh_3"/>
+        <mesh file="hole/4.stl" name="mesh_4"/>
+        <mesh file="hole/5.stl" name="mesh_5"/>
+        <mesh file="hole/6.stl" name="mesh_6"/>
+        <mesh file="hole/7.stl" name="mesh_7"/>
+        <mesh file="hole/8.stl" name="mesh_8"/>
+        <mesh file="hole/9.stl" name="mesh_9"/>
+        <mesh file="hole/10.stl" name="mesh_10"/>
+        <mesh file="hole/11.stl" name="mesh_11"/>
+        <mesh file="hole/12.stl" name="mesh_12"/>
+        <mesh file="hole/13.stl" name="mesh_13"/>
+        <mesh file="hole/14.stl" name="mesh_14"/>
+        <mesh file="hole/15.stl" name="mesh_15"/>
+        <mesh file="hole/16.stl" name="mesh_16"/>
+        <mesh file="hole/17.stl" name="mesh_17"/>
+        <mesh file="hole/18.stl" name="mesh_18"/>
+        <mesh file="hole/19.stl" name="mesh_19"/>
+        <mesh file="hole/20.stl" name="mesh_20"/>
+        <mesh file="hole/21.stl" name="mesh_21"/>
+        <mesh file="hole/22.stl" name="mesh_22"/>
+        <mesh file="hole/23.stl" name="mesh_23"/>
+        <mesh file="hole/24.stl" name="mesh_24"/>
+        <mesh file="hole/25.stl" name="mesh_25"/>
+        <mesh file="hole/26.stl" name="mesh_26"/>
+        <mesh file="hole/27.stl" name="mesh_27"/>
+        <mesh file="hole/28.stl" name="mesh_28"/>
+        <mesh file="hole/29.stl" name="mesh_29"/>
+        <mesh file="hole/30.stl" name="mesh_30"/>
+        <mesh file="hole/31.stl" name="mesh_31"/>
+        <mesh file="hole/32.stl" name="mesh_32"/>
+        <mesh file="hole/33.stl" name="mesh_33"/>
+        <mesh file="hole/34.stl" name="mesh_34"/>
+        <mesh file="hole/35.stl" name="mesh_35"/>
+        <mesh file="hole/36.stl" name="mesh_36"/>
+        <mesh file="hole/37.stl" name="mesh_37"/>
+        <mesh file="hole/38.stl" name="mesh_38"/>
+        <mesh file="hole/39.stl" name="mesh_39"/>
+        <mesh file="hole/40.stl" name="mesh_40"/>
+        <mesh file="hole/41.stl" name="mesh_41"/>
+        <mesh file="hole/42.stl" name="mesh_42"/>
+        <mesh file="hole/43.stl" name="mesh_43"/>
+        <mesh file="hole/44.stl" name="mesh_44"/>
+        <mesh file="hole/45.stl" name="mesh_45"/>
+        <mesh file="hole/46.stl" name="mesh_46"/>
+        <mesh file="hole/47.stl" name="mesh_47"/>
+        <mesh file="hole/48.stl" name="mesh_48"/>
+        <mesh file="hole/49.stl" name="mesh_49"/>
+        <mesh file="hole/50.stl" name="mesh_50"/>
+        <mesh file="hole/51.stl" name="mesh_51"/>
+        <mesh file="hole/52.stl" name="mesh_52"/>
+        <mesh file="hole/53.stl" name="mesh_53"/>
+        <texture file="../texture/red-wood.png" name="red-wood"/>
+        <material name="redwood_mat" texture="red-wood" texrepeat="3 3" specular="0.4" shininess="0.1"/>
+    </asset>
+    <worldbody>
+        <body>
+            <body name="object">
+                <geom mesh="mesh_0" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_1" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_2" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_3" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_4" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_5" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_6" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_7" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_8" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_9" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_10" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_11" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_12" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_13" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_14" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_15" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_16" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_17" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_18" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_19" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_20" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_21" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_22" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_23" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_24" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_25" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_26" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_27" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_28" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_29" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_30" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_31" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_32" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_33" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_34" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_35" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_36" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_37" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_38" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_39" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_40" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_41" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_42" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_43" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_44" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_45" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_46" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_47" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_48" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_49" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_50" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_51" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_52" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_53" type="mesh" group="0" material="redwood_mat"/>
+            </body>
+        </body>
+    </worldbody>
+</mujoco>
