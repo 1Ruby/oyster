@@ -158,7 +158,7 @@ class PeginHole(SingleArmEnv):
             camera_widths=256,
             camera_depths=False,
             peg_class=0,
-            threshold=0.1
+            threshold=0.15
     ):
         # settings for table top
         self.table_full_size = table_full_size
@@ -212,7 +212,7 @@ class PeginHole(SingleArmEnv):
             camera_depths=camera_depths,
         )
     
-    def reward(self, action=None):
+    def reward(self, _action=None):
         """
         Reward function for the task.
 
@@ -220,41 +220,32 @@ class PeginHole(SingleArmEnv):
         reward_scale / 2.25 as well so that the max score is equal to reward_scale
 
         Args:
-            action (np array): [NOT USED]
+            _action (np array): [NOT USED]
 
         Returns:
             float: reward value
         """
-        reward = 0.
-        max_reward = 100.0
+        cr = 1
+        lmbd = 5
+        ca = 5
+        eps = 0.05
+        eps_d = 5e-3
+        eps_h = 5e-3
+        _pos_to_hole = self.get_peg_pos_to_hole()
+        r_s = np.linalg.norm(_pos_to_hole)
+        r_xy = np.linalg.norm([_pos_to_hole[0], _pos_to_hole[1]])
+        if self._check_success():
+            reward = 10
+        elif _pos_to_hole[0] <= eps_h and _pos_to_hole[1] <= eps_h and _pos_to_hole[2] <= 0:
+            reward = 4 - 2*_pos_to_hole[2]/(self.threshold - eps_d)
+        elif r_xy <= eps:
+            reward = 2 - ca*r_xy
+        else:
+            reward = cr * (1 - (np.tanh(lmbd * r_s) + np.tanh(lmbd * r_xy))/2)
         
-        # sparse completion reward
-        if self._check_success(self.threshold):
-            reward = max_reward
+        if self.reward_scale:
+            reward *= self.reward_scale/10
         
-        # use a shaping reward
-        elif self.reward_shaping:
-            peg_bottom_pos = self.get_peg_bottom_pos()
-            hole_center = self.get_hole_center()
-            dist = np.linalg.norm(peg_bottom_pos - hole_center)
-            obs = self._get_observations()
-            delta = np.abs(np.arccos(obs['peg_quat'][-1]) * 2 - np.pi)  # tilt angle
-            
-            # in hole but not reach threshold
-            if self._check_success(0.0):
-                reward = 10.0
-                depth = hole_center[2] - peg_bottom_pos[2]
-                reward += depth / self.threshold * (max_reward - reward)
-                reward = np.min([reward, max_reward])
-            
-            # not in hole
-            else:
-                reaching_reward = 1 - np.tanh(10.0 * dist)
-                reward = reaching_reward - 10 * delta
-        
-        # Scale reward if requested
-        if self.reward_scale is not None:
-            reward *= self.reward_scale / max_reward
         return reward
     
     def _load_model(self):
@@ -279,8 +270,8 @@ class PeginHole(SingleArmEnv):
         mujoco_arena.set_origin([0, 0, 0])
         
         # initialize objects of interest
-        self.hole = Hole0(name="hole")  # 0.06m * 0.06m square clearance
-        self.peg_length = 0.08
+        self.peg_length = 0.08  # half length of peg
+        self.hole_depth = 0.1  # depth from hole surface to object center
         
         # determine the clearance of the peg
         if self.peg_class == 0:
@@ -379,7 +370,7 @@ class PeginHole(SingleArmEnv):
         """
         super()._reset_internal()
     
-    def _check_success(self, threshold=None):
+    def _check_success(self):
         """
         Check if peg is inserted into the hole.
         """
@@ -388,16 +379,10 @@ class PeginHole(SingleArmEnv):
         
         # cube is higher than the table top above a margin
         # return cube_height > table_height + 0.04
-        if threshold is None:
-            threshold = self.threshold
-        peg_bottom_pos = self.get_peg_bottom_pos()
-        obs = self._get_observations()
-        delta = np.abs(np.arccos(obs['peg_quat'][-1]) * 2 - np.pi)  # tilt angle
-        peg_pos = obs['peg_pos']
-        # peg center
-        hole_center = self.get_hole_center()
-        if np.abs(peg_pos[0] - hole_center[0]) < 2e-2 and np.abs(peg_pos[1] - hole_center[1]) < 2e-2 and \
-                peg_bottom_pos[2] < hole_center[2] - threshold and delta <= 0.7:
+        _pos_to_hole = self.get_peg_pos_to_hole()
+        eps_h = 5e-3
+        eps_d = 5e-3
+        if _pos_to_hole[0] <= eps_h and _pos_to_hole[1] <= eps_h and self.threshold - eps_d <= -_pos_to_hole[2]:
             return True
         else:
             return False
@@ -413,19 +398,16 @@ class PeginHole(SingleArmEnv):
         robot_6d_pose = np.hstack((robot_pos, robot_euler))
         return robot_6d_pose
     
-    def get_hole_center(self):
-        hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
-        hole_pos[2] += 0.1
-        return hole_pos
-    
-    def get_peg_bottom_pos(self):
-        obs = self._get_observations()
-        peg_vec = np.array([0, 0, self.peg_length])
-        peg_pos = obs['peg_pos']
-        peg_quat = obs['peg_quat']
-        peg_bottom_pos = R.from_quat(peg_quat).as_matrix() @ peg_vec + peg_pos
-        return peg_bottom_pos
-
+    def get_peg_pos_to_hole(self):
+        _peg_vec = np.array([0, 0, self.peg_length])
+        _peg_pos = np.array(self.sim.data.body_xpos[self.peg_body_id])
+        _peg_quat = convert_quat(np.array(self.sim.data.body_xquat[self.peg_body_id]), to="xyzw")
+        _peg_bottom_pos = R.from_quat(_peg_quat).as_matrix() @ _peg_vec + _peg_pos
+        _hole_pos = np.array(self.sim.data.body_xpos[self.hole_body_id])
+        _hole_pos[2] += self.hole_depth
+        return _peg_bottom_pos - _hole_pos
+        
+        
 
 if __name__ == "__main__":
     import pdb
@@ -441,14 +423,16 @@ if __name__ == "__main__":
     # env = Lift(robots="IIWA", initialization_noise=None, has_renderer=True, has_offscreen_renderer=False, use_camera_obs=False)
     env = PeginHole(robots=["IIWA"], gripper_types=None, initialization_noise=None, has_renderer=True,
                     render_camera=None, has_offscreen_renderer=False, use_camera_obs=False, reward_shaping=True,
-                    reward_scale=None, peg_class=1)
+                    reward_scale=None, peg_class=2)
     env = VisualizationWrapper(env)
     obs = env.reset()
     done = False
     for i in range(1000):
         action = np.array([0, 0, 0.5, 0, 0, 0])
+        if env.env._check_success():
+            action = np.zeros_like(action)
         obs, r, done, _ = env.step(action)
-        print(env.env.get_peg_bottom_pos())
+        print(env.env.get_peg_pos_to_hole())
         print(r)
         env.render()
         # pdb.set_trace()
