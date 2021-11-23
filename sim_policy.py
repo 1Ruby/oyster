@@ -16,6 +16,8 @@ from launch_experiment import deep_update_dict
 from rlkit.torch.sac.policies import MakeDeterministic
 from rlkit.samplers.util import rollout
 
+from peginhole import MultitaskPeginHole
+
 
 def sim_policy(variant, video_path, path_to_exp, num_trajs=1, deterministic=False, save_video=False, mode='eval', exp_id=None):
     '''
@@ -32,7 +34,10 @@ def sim_policy(variant, video_path, path_to_exp, num_trajs=1, deterministic=Fals
     # create multi-task environment and sample tasks
     if exp_id:
         path_to_exp = os.path.join(path_to_exp, exp_id)
-    env = CameraWrapper(NormalizedBoxEnv(ENVS[variant['env_name']](**variant['env_params'])), variant['util_params']['gpu_id'])
+    if variant['env_name'] == 'peginhole':
+        env = CameraWrapper(NormalizedBoxEnv(MultitaskPeginHole(**variant['env_params'])), variant['util_params']['gpu_id'])
+    else:
+        env = CameraWrapper(NormalizedBoxEnv(ENVS[variant['env_name']](**variant['env_params'])), variant['util_params']['gpu_id'])
     tasks = env.get_all_task_idx()
     obs_dim = int(np.prod(env.observation_space.shape))
     action_dim = int(np.prod(env.action_space.shape))
