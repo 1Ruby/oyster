@@ -20,6 +20,12 @@ __pycache__
 /output
 /output/**
 /videos
+.idea
+exp_log.md
+
 
 peginhole/blender
+peginhole/assets/test
+peginhole/assets/obj2stl*
+peginhole/test_obj.py
 MUJOCO_LOG.TXT
