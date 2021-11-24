@@ -236,7 +236,7 @@ class PeginHole(SingleArmEnv):
         r_xy = np.linalg.norm([_pos_to_hole[0], _pos_to_hole[1]])
         if self._check_success():
             reward = 10
-        elif _pos_to_hole[0] <= eps_h and _pos_to_hole[1] <= eps_h and _pos_to_hole[2] <= 0:
+        elif np.abs(_pos_to_hole[0]) <= eps_h and np.abs(_pos_to_hole[1]) <= eps_h and _pos_to_hole[2] <= 0:
             reward = 4 - 2*_pos_to_hole[2]/(self.threshold - eps_d)
         elif r_xy <= eps:
             reward = 2 - ca*r_xy
@@ -382,7 +382,7 @@ class PeginHole(SingleArmEnv):
         _pos_to_hole = self.get_peg_pos_to_hole()
         eps_h = 5e-3
         eps_d = 5e-3
-        if _pos_to_hole[0] <= eps_h and _pos_to_hole[1] <= eps_h and self.threshold - eps_d <= -_pos_to_hole[2]:
+        if np.abs(_pos_to_hole[0]) <= eps_h and np.abs(_pos_to_hole[1]) <= eps_h and self.threshold - eps_d <= -_pos_to_hole[2]:
             return True
         else:
             return False
