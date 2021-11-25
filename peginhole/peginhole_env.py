@@ -274,15 +274,8 @@ class PeginHole(SingleArmEnv):
         self.hole_depth = 0.1  # depth from hole surface to object center
         
         # determine the clearance of the peg
-        if self.peg_class == 0:
-            self.peg = Peg0(name='peg')
-            self.hole = Hole0(name='hole')
-        if self.peg_class == 1:
-            self.peg = Peg1(name='peg')
-            self.hole = Hole1(name='hole')
-        if self.peg_class == 2:
-            self.peg = Peg2(name='peg')
-            self.hole = Hole2(name='hole')
+        self.peg = Peg(name='peg', peg_class=self.peg_class)
+        self.hole = Hole(name='hole', peg_class=self.peg_class)
 
         # load hole object
         hole_obj = self.hole.get_obj()
@@ -423,7 +416,7 @@ if __name__ == "__main__":
     # env = Lift(robots="IIWA", initialization_noise=None, has_renderer=True, has_offscreen_renderer=False, use_camera_obs=False)
     env = PeginHole(robots=["IIWA"], gripper_types=None, initialization_noise=None, has_renderer=True,
                     render_camera=None, has_offscreen_renderer=False, use_camera_obs=False, reward_shaping=True,
-                    reward_scale=None, peg_class=2)
+                    reward_scale=None, peg_class=4)
     env = VisualizationWrapper(env)
     obs = env.reset()
     done = False
