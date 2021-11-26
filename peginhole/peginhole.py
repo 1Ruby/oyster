@@ -4,10 +4,10 @@ from .peginhole_env import *
 from gym import spaces
 
 class MultitaskPeginHole(PeginHole):
-    def __init__(self, robots, n_tasks=3, randomize_tasks=False, **kwargs):
+    def __init__(self, robots, n_tasks=10, randomize_tasks=False, **kwargs):
         super().__init__(robots, gripper_types=None, **kwargs)
         self._goal = self.peg_class
-        self.num_tasks = 3
+        self.num_tasks = 10
     
     def get_all_task_idx(self):
         return range(self.num_tasks)

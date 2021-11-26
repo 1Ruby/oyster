@@ -1,7 +1,7 @@
 {
   "env_name": "peginhole",
-  "n_train_tasks": 2,
-  "n_eval_tasks": 3,
+  "n_train_tasks": 3,
+  "n_eval_tasks": 7,
   "env_params": {
     "robots": ["IIWA"],
     "has_offscreen_renderer": 0,
