@@ -1,6 +1,6 @@
 import numpy as np
 
-from .peginhole_env import *
+from peginhole_env import *
 from gym import spaces
 
 class MultitaskPeginHole(PeginHole):
@@ -48,11 +48,9 @@ class MultitaskPeginHole(PeginHole):
         return self._flatten_obs(ob_dict)
     
     def step(self, action):
+        ob_dict, reward, done, info = super().step(action)
         if self._check_success():
-            action_zero = np.zeros_like(action)
-            ob_dict, reward, done, info = super().step(action_zero)
-        else:
-            ob_dict, reward, done, info = super().step(action)
+            done = True
         return self._flatten_obs(ob_dict), reward, done, info
     
         

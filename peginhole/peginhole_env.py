@@ -19,7 +19,7 @@ from robosuite.utils.transform_utils import quat2axisangle
 from robosuite.wrappers.visualization_wrapper import VisualizationWrapper
 
 from scipy.spatial.transform import Rotation as R
-from .objects import *
+from objects import *
 
 class PeginHole(SingleArmEnv):
     """
@@ -279,7 +279,7 @@ class PeginHole(SingleArmEnv):
 
         # load hole object
         hole_obj = self.hole.get_obj()
-        hole_obj.set("pos", "-0.09 0 0.80")
+        hole_obj.set("pos", "-0.05 0 0.70")
         
         # load peg object
         peg_obj = self.peg.get_obj()
@@ -414,14 +414,14 @@ if __name__ == "__main__":
     from robosuite.environments.manipulation.lift import Lift
     
     # env = Lift(robots="IIWA", initialization_noise=None, has_renderer=True, has_offscreen_renderer=False, use_camera_obs=False)
-    env = PeginHole(robots=["IIWA"], gripper_types=None, initialization_noise=None, has_renderer=True,
+    env = PeginHole(robots=["Panda"], gripper_types=None, initialization_noise=None, has_renderer=True,
                     render_camera=None, has_offscreen_renderer=False, use_camera_obs=False, reward_shaping=True,
-                    reward_scale=None, peg_class=4)
+                    reward_scale=None, peg_class=1)
     env = VisualizationWrapper(env)
     obs = env.reset()
     done = False
     for i in range(1000):
-        action = np.array([0, 0, 0.5, 0, 0, 0])
+        action = get_policy_action(obs)
         if env.env._check_success():
             action = np.zeros_like(action)
         obs, r, done, _ = env.step(action)
