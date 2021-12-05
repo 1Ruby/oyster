@@ -1,6 +1,6 @@
 import numpy as np
 
-from peginhole_env import *
+from .peginhole_env import *
 from gym import spaces
 
 class MultitaskPeginHole(PeginHole):
