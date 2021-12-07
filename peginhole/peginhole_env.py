@@ -417,19 +417,27 @@ if __name__ == "__main__":
     env = PeginHole(robots=["Panda"], gripper_types=None, initialization_noise=None, has_renderer=True,
                     render_camera=None, has_offscreen_renderer=False, use_camera_obs=False, reward_shaping=True,
                     reward_scale=None, peg_class=1)
-    env = VisualizationWrapper(env)
+    # env = VisualizationWrapper(env)
     obs = env.reset()
     done = False
+    from PIL import Image
+    tmp_dir = 'video_tmp'
+    os.makedirs(tmp_dir, exist_ok=True)
+    frames = []
     for i in range(1000):
         action = get_policy_action(obs)
-        if env.env._check_success():
+        if env._check_success():
             action = np.zeros_like(action)
         obs, r, done, _ = env.step(action)
-        print(env.env.get_peg_pos_to_hole())
-        print(r)
-        env.render()
+        # print(env.get_peg_pos_to_hole())
+        # print(r)
+        # image_arr = env.sim.render(width=3000, height=2000, camera_name=None)
+        # image = Image.fromarray(np.flipud(image_arr))
+        # image.save(os.path.join(tmp_dir, '%06d.jpg' % i))
+        image_arr = env.render()
+        print(image_arr)
         # pdb.set_trace()
-    
+        
     '''
     import numpy as np
     import robosuite as suite

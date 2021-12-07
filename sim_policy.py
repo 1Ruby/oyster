@@ -77,8 +77,8 @@ def sim_policy(variant, video_path, path_to_exp, num_trajs=1, deterministic=Fals
         agent = MakeDeterministic(agent)
 
     # load trained weights (otherwise simulate random policy)
-    context_encoder.load_state_dict(torch.load(os.path.join(path_to_exp, 'context_encoder.pth')))
-    policy.load_state_dict(torch.load(os.path.join(path_to_exp, 'policy.pth')))
+    context_encoder.load_state_dict(torch.load(os.path.join(path_to_exp, 'context_encoder.pth'), map_location=torch.device('cpu')))
+    policy.load_state_dict(torch.load(os.path.join(path_to_exp, 'policy.pth'), map_location=torch.device('cpu')))
 
     # loop through tasks collecting rollouts
     all_rets = []
