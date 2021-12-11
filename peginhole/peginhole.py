@@ -1,6 +1,6 @@
 import numpy as np
 
-from .peginhole_env import *
+from peginhole_env import *
 from gym import spaces
 
 class MultitaskPeginHole(PeginHole):
@@ -13,13 +13,15 @@ class MultitaskPeginHole(PeginHole):
         return range(self.num_tasks)
     
     def reset_task(self, idx):
-        if self.peg_class != idx:
-            self.peg_class = idx
-            self._load_model()
-            self._postprocess_model()
-            self._initialize_sim()
-            self._reset_internal()
-            self._observables = self._setup_observables()
+        self.peg_class = idx
+        if self.peg_class <= 2:
+            self.friction[0] = np.random.uniform(0.5, 1)
+            self.hole_pos[0] = np.random.uniform(-0.05, 0)
+            self.hole_pos[1] = np.random.uniform(-0.05, 0.05)
+        else:
+            self.friction[0] = np.random.uniform(1.5, 2)
+            self.hole_pos[0] = np.random.uniform(-0.15, 0)
+            self.hole_pos[1] = np.random.uniform(-0.1, 0.1)
         self._goal = self.peg_class
         self.reset()
     

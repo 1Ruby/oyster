@@ -6,7 +6,7 @@
     "robots": ["Padna"],
     "has_offscreen_renderer": 1,
     "use_camera_obs": 0,
-    "hard_reset": 0,
+    "hard_reset": 1,
     "threshold": 0.1,
     "horizon": 500,
     "reward_shaping": 1,

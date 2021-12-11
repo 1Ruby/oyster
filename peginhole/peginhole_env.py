@@ -19,7 +19,13 @@ from robosuite.utils.transform_utils import quat2axisangle
 from robosuite.wrappers.visualization_wrapper import VisualizationWrapper
 
 from scipy.spatial.transform import Rotation as R
-from .objects import *
+from objects import *
+
+def arr2str(arr):
+    arr_str = str(arr[0])
+    for v in arr[1:]:
+        arr_str += ' '+str(v)
+    return arr_str
 
 class PeginHole(SingleArmEnv):
     """
@@ -165,6 +171,8 @@ class PeginHole(SingleArmEnv):
         self.table_friction = table_friction
         self.table_offset = np.array((0, 0, 0.8))
         self.threshold = threshold
+        self.friction = [1, 0.005, 0.001]
+        self.hole_pos = [0.15, 0.2, 0.7]
         
         # reward configuration
         self.reward_scale = reward_scale
@@ -276,14 +284,18 @@ class PeginHole(SingleArmEnv):
         # determine the clearance of the peg
         self.peg = Peg(name='peg', peg_class=self.peg_class)
         self.hole = Hole(name='hole', peg_class=self.peg_class)
-
+        
         # load hole object
         hole_obj = self.hole.get_obj()
-        hole_obj.set("pos", "-0.05 0 0.70")
+        hole_obj.set("pos", arr2str(self.hole_pos))
+        for geom in hole_obj.findall('geom'):
+            geom.set("friction", arr2str(self.friction))
         
         # load peg object
         peg_obj = self.peg.get_obj()
         peg_obj.set("pos", array_to_string((0, 0, self.peg_length)))
+        for geom in peg_obj.findall('geom'):
+            geom.set("friction", arr2str(self.friction))
         
         # Append peg to robot ee
         robot_eef = self.robots[0].robot_model.eef_name
@@ -344,7 +356,7 @@ class PeginHole(SingleArmEnv):
             def hole_quat(obs_cache):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.hole_body_id]), to="xyzw")
             
-            sensors = [peg_pos, peg_quat]
+            sensors = [peg_pos, peg_quat, hole_pos]
             names = [s.__name__ for s in sensors]
             
             # Create observables
@@ -429,13 +441,12 @@ if __name__ == "__main__":
         if env._check_success():
             action = np.zeros_like(action)
         obs, r, done, _ = env.step(action)
-        # print(env.get_peg_pos_to_hole())
-        # print(r)
+        print(env.get_peg_pos_to_hole())
+        print(r)
         # image_arr = env.sim.render(width=3000, height=2000, camera_name=None)
         # image = Image.fromarray(np.flipud(image_arr))
         # image.save(os.path.join(tmp_dir, '%06d.jpg' % i))
-        image_arr = env.render()
-        print(image_arr)
+        env.render()
         # pdb.set_trace()
         
     '''
