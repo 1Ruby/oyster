@@ -19,7 +19,7 @@ from robosuite.utils.transform_utils import quat2axisangle
 from robosuite.wrappers.visualization_wrapper import VisualizationWrapper
 
 from scipy.spatial.transform import Rotation as R
-from objects import *
+from .objects import *
 
 def arr2str(arr):
     arr_str = str(arr[0])
@@ -172,7 +172,7 @@ class PeginHole(SingleArmEnv):
         self.table_offset = np.array((0, 0, 0.8))
         self.threshold = threshold
         self.friction = [1, 0.005, 0.001]
-        self.hole_pos = [0.15, 0.2, 0.7]
+        self.hole_pos = [-0.05, 0, 0.7]
         
         # reward configuration
         self.reward_scale = reward_scale

@@ -3,7 +3,7 @@
   "n_train_tasks": 3,
   "n_eval_tasks": 7,
   "env_params": {
-    "robots": ["Padna"],
+    "robots": ["Panda"],
     "has_offscreen_renderer": 1,
     "use_camera_obs": 0,
     "hard_reset": 1,
