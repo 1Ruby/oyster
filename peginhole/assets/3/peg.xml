@@ -8,6 +8,10 @@
         <mesh file="peg/4.stl" name="mesh_4"/>
         <mesh file="peg/5.stl" name="mesh_5"/>
         <mesh file="peg/6.stl" name="mesh_6"/>
+        <mesh file="peg/7.stl" name="mesh_7"/>
+        <mesh file="peg/8.stl" name="mesh_8"/>
+        <mesh file="peg/9.stl" name="mesh_9"/>
+        <mesh file="peg/10.stl" name="mesh_10"/>
         <texture file="../texture/green-wood.png" name="green-wood"/>
         <material name="greenwood_mat" texture="green-wood" texrepeat="1 1" specular="0.4" shininess="0.1"/>
     </asset>
@@ -21,6 +25,10 @@
                 <geom mesh="mesh_4" type="mesh" group="0" material="greenwood_mat"/>
                 <geom mesh="mesh_5" type="mesh" group="0" material="greenwood_mat"/>
                 <geom mesh="mesh_6" type="mesh" group="0" material="greenwood_mat"/>
+                <geom mesh="mesh_7" type="mesh" group="0" material="greenwood_mat"/>
+                <geom mesh="mesh_8" type="mesh" group="0" material="greenwood_mat"/>
+                <geom mesh="mesh_9" type="mesh" group="0" material="greenwood_mat"/>
+                <geom mesh="mesh_10" type="mesh" group="0" material="greenwood_mat"/>
             </body>
         </body>
     </worldbody>
