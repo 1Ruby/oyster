@@ -27,6 +27,13 @@ def arr2str(arr):
         arr_str += ' '+str(v)
     return arr_str
 
+def normalize(arr):
+    norm = np.linalg.norm(arr)
+    if norm == 0:
+        return arr
+    else:
+        return arr / norm
+
 class PeginHole(SingleArmEnv):
     """
     This class corresponds to the peg-in-hole task for a single robot arm.
@@ -164,12 +171,14 @@ class PeginHole(SingleArmEnv):
             camera_widths=256,
             camera_depths=False,
             peg_class=0,
+            large_hole=False,
             threshold=0.15
     ):
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
         self.table_offset = np.array((0, 0, 0.8))
+        self.large_hole = large_hole
         self.threshold = threshold
         self.friction = [1, 0.005, 0.001]
         self.hole_pos = [-0.05, 0, 0.7]
@@ -199,7 +208,7 @@ class PeginHole(SingleArmEnv):
         super().__init__(
             robots=robots,
             env_configuration=env_configuration,
-            controller_configs=controller_configs,
+            controller_configs=None,
             mount_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
@@ -242,6 +251,7 @@ class PeginHole(SingleArmEnv):
         _pos_to_hole = self.get_peg_pos_to_hole()
         r_s = np.linalg.norm(_pos_to_hole)
         r_xy = np.linalg.norm([_pos_to_hole[0], _pos_to_hole[1]])
+        
         if self._check_success():
             reward = 10
         elif np.abs(_pos_to_hole[0]) <= eps_h and np.abs(_pos_to_hole[1]) <= eps_h and _pos_to_hole[2] <= 0:
@@ -250,6 +260,12 @@ class PeginHole(SingleArmEnv):
             reward = 2 - ca*r_xy
         else:
             reward = cr * (1 - (np.tanh(lmbd * r_s) + np.tanh(lmbd * r_xy))/2)
+
+        _peg_quat = convert_quat(np.array(self.sim.data.body_xquat[self.peg_body_id]), to="xyzw")
+        _theta = 2 * np.arccos(_peg_quat[-1])
+        _direc = normalize(_peg_quat[:3])
+        _theta_z = _theta * _direc[1]
+        reward -= np.abs(_theta_z) * 1000
         
         if self.reward_scale:
             reward *= self.reward_scale/10
@@ -283,7 +299,7 @@ class PeginHole(SingleArmEnv):
         
         # determine the clearance of the peg
         self.peg = Peg(name='peg', peg_class=self.peg_class)
-        self.hole = Hole(name='hole', peg_class=self.peg_class)
+        self.hole = Hole(name='hole', peg_class=self.peg_class, large=self.large_hole)
         
         # load hole object
         hole_obj = self.hole.get_obj()
@@ -428,21 +444,35 @@ if __name__ == "__main__":
     # env = Lift(robots="IIWA", initialization_noise=None, has_renderer=True, has_offscreen_renderer=False, use_camera_obs=False)
     env = PeginHole(robots=["Panda"], gripper_types=None, initialization_noise=None, has_renderer=True,
                     render_camera=None, has_offscreen_renderer=False, use_camera_obs=False, reward_shaping=True,
-                    reward_scale=None, peg_class=1)
+                    reward_scale=None, peg_class=0)
     # env = VisualizationWrapper(env)
     obs = env.reset()
+    peg_quat = obs['peg_quat']
     done = False
     from PIL import Image
     tmp_dir = 'video_tmp'
     os.makedirs(tmp_dir, exist_ok=True)
     frames = []
+    flag = 1
     for i in range(1000):
-        action = get_policy_action(obs)
-        if env._check_success():
-            action = np.zeros_like(action)
+        if peg_quat[-1] > 0 and flag:
+            action = np.array([0,0,0,0,0,-0.1,0])
+        else:
+            flag = 0
+            action = np.array([0,0,0,0,0,0,0.1])
+        # print(action)
+        # if not env._check_success():
+        #     action = np.asarray([0,0,-1,0,0,0])
         obs, r, done, _ = env.step(action)
-        print(env.get_peg_pos_to_hole())
-        print(r)
+        # print(action)
+        # print(env.get_peg_pos_to_hole())
+        peg_quat = obs['peg_quat']
+        print(peg_quat)
+        theta = 2 * np.arccos(peg_quat[-1])
+        direc = normalize(peg_quat[:3])
+        theta_z = theta * direc[1]
+        # print(theta_z)
+        # print(r, end='\n\n')
         # image_arr = env.sim.render(width=3000, height=2000, camera_name=None)
         # image = Image.fromarray(np.flipud(image_arr))
         # image.save(os.path.join(tmp_dir, '%06d.jpg' % i))

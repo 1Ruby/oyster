@@ -13,15 +13,14 @@ class MultitaskPeginHole(PeginHole):
         return range(self.num_tasks)
     
     def reset_task(self, idx):
-        self.peg_class = idx
-        if self.peg_class <= 2:
-            self.friction[0] = np.random.uniform(0.5, 1)
-            self.hole_pos[0] = np.random.uniform(-0.05, 0)
-            self.hole_pos[1] = np.random.uniform(-0.05, 0.05)
+        if idx >= 5:
+            self.peg_class = idx - 5
+            self.large_hole = True
+            self.friction[0] = 2
         else:
-            self.friction[0] = np.random.uniform(1.5, 2)
-            self.hole_pos[0] = np.random.uniform(-0.15, 0)
-            self.hole_pos[1] = np.random.uniform(-0.1, 0.1)
+            self.peg_class = idx
+            self.large_hole = False
+            self.friction[0] = 1
         self._goal = self.peg_class
         self.reset()
     
