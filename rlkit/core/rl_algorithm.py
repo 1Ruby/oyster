@@ -481,7 +481,7 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def _do_training(self):
+    def _do_training(self, indices):
         """
         Perform some update, e.g. perform one gradient step.
         :return:
