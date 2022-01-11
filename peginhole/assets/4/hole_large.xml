@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<mujoco model="hole_large4">
+    <asset>
+        <mesh file="hole_large/0.stl" name="mesh_0"/>
+        <mesh file="hole_large/1.stl" name="mesh_1"/>
+        <mesh file="hole_large/2.stl" name="mesh_2"/>
+        <mesh file="hole_large/3.stl" name="mesh_3"/>
+        <mesh file="hole_large/4.stl" name="mesh_4"/>
+        <mesh file="hole_large/5.stl" name="mesh_5"/>
+        <mesh file="hole_large/6.stl" name="mesh_6"/>
+        <mesh file="hole_large/7.stl" name="mesh_7"/>
+        <mesh file="hole_large/8.stl" name="mesh_8"/>
+        <mesh file="hole_large/9.stl" name="mesh_9"/>
+        <texture file="../texture/red-wood.png" name="red-wood"/>
+        <material name="redwood_mat" texture="red-wood" texrepeat="3 3" specular="0.4" shininess="0.1"/>
+    </asset>
+    <worldbody>
+        <body>
+            <body name="object">
+                <geom mesh="mesh_0" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_1" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_2" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_3" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_4" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_5" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_6" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_7" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_8" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_9" type="mesh" group="0" material="redwood_mat"/>
+            </body>
+        </body>
+    </worldbody>
+</mujoco>

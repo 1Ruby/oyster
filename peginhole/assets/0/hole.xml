@@ -13,6 +13,8 @@
         <mesh file="hole/9.stl" name="mesh_9"/>
         <mesh file="hole/10.stl" name="mesh_10"/>
         <mesh file="hole/11.stl" name="mesh_11"/>
+        <mesh file="hole/12.stl" name="mesh_12"/>
+        <mesh file="hole/13.stl" name="mesh_13"/>
         <texture file="../texture/red-wood.png" name="red-wood"/>
         <material name="redwood_mat" texture="red-wood" texrepeat="3 3" specular="0.4" shininess="0.1"/>
     </asset>
@@ -31,6 +33,8 @@
                 <geom mesh="mesh_9" type="mesh" group="0" material="redwood_mat"/>
                 <geom mesh="mesh_10" type="mesh" group="0" material="redwood_mat"/>
                 <geom mesh="mesh_11" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_12" type="mesh" group="0" material="redwood_mat"/>
+                <geom mesh="mesh_13" type="mesh" group="0" material="redwood_mat"/>
             </body>
         </body>
     </worldbody>
