@@ -16,16 +16,18 @@ __pycache__
 
 *.pth
 *live.ipynb
+.idea
 
 /output
-/output/**
 /videos
-.idea
+/images
+/latent
 exp_log.md
-
+*.patch
 
 peginhole/blender
 peginhole/assets/test
 peginhole/assets/obj2stl*
 peginhole/test_obj.py
+peginhole/assets_cp
 MUJOCO_LOG.TXT
