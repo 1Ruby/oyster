@@ -172,7 +172,7 @@ class PeginHole(SingleArmEnv):
             camera_depths=False,
             peg_class=0,
             large_hole=False,
-            threshold=0.15
+            threshold=0.05
     ):
         # settings for table top
         self.table_full_size = table_full_size
@@ -181,7 +181,7 @@ class PeginHole(SingleArmEnv):
         self.large_hole = large_hole
         self.threshold = threshold
         self.friction = [1, 0.005, 0.001]
-        self.hole_pos = [-0.05, 0, 0.7]
+        self.hole_pos = [-0.1, 0, 0.8]
         
         # reward configuration
         self.reward_scale = reward_scale
@@ -208,7 +208,7 @@ class PeginHole(SingleArmEnv):
         super().__init__(
             robots=robots,
             env_configuration=env_configuration,
-            controller_configs=None,
+            controller_configs=controller_configs,
             mount_types="default",
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
@@ -265,7 +265,7 @@ class PeginHole(SingleArmEnv):
         _theta = 2 * np.arccos(_peg_quat[-1])
         _direc = normalize(_peg_quat[:3])
         _theta_z = _theta * _direc[1]
-        reward -= np.abs(_theta_z) * 1000
+        reward -= np.abs(_theta_z - np.pi) * 1000
         
         if self.reward_scale:
             reward *= self.reward_scale/10
@@ -294,8 +294,8 @@ class PeginHole(SingleArmEnv):
         mujoco_arena.set_origin([0, 0, 0])
         
         # initialize objects of interest
-        self.peg_length = 0.08  # half length of peg
-        self.hole_depth = 0.1  # depth from hole surface to object center
+        self.peg_length = 0.05  # half length of peg
+        self.hole_depth = 0.05  # depth from hole surface to object center
         
         # determine the clearance of the peg
         self.peg = Peg(name='peg', peg_class=self.peg_class)
@@ -454,20 +454,17 @@ if __name__ == "__main__":
     os.makedirs(tmp_dir, exist_ok=True)
     frames = []
     flag = 1
-    for i in range(1000):
-        if peg_quat[-1] > 0 and flag:
-            action = np.array([0,0,0,0,0,-0.1,0])
-        else:
-            flag = 0
-            action = np.array([0,0,0,0,0,0,0.1])
+    for i in range(2000):
+        # action = get_policy_action(obs)
         # print(action)
+        action = np.zeros(6)
         # if not env._check_success():
         #     action = np.asarray([0,0,-1,0,0,0])
         obs, r, done, _ = env.step(action)
         # print(action)
-        # print(env.get_peg_pos_to_hole())
-        peg_quat = obs['peg_quat']
-        print(peg_quat)
+        print(env.get_peg_pos_to_hole())
+        # peg_quat = obs['peg_quat']
+        # print(peg_quat)
         theta = 2 * np.arccos(peg_quat[-1])
         direc = normalize(peg_quat[:3])
         theta_z = theta * direc[1]

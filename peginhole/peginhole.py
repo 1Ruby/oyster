@@ -15,11 +15,11 @@ class MultitaskPeginHole(PeginHole):
     def reset_task(self, idx):
         if idx >= 5:
             self.peg_class = idx - 5
-            self.large_hole = True
+            self.large_hole = False
             self.friction[0] = 2
         else:
             self.peg_class = idx
-            self.large_hole = False
+            self.large_hole = True
             self.friction[0] = 1
         self._goal = self.peg_class
         self.reset()
