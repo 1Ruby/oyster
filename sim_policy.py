@@ -113,17 +113,18 @@ def sim_policy(variant, video_path, path_to_exp, num_trajs=1, deterministic=Fals
         all_rets.append([sum(p['rewards']) for p in paths])
         print('return', np.mean(all_rets[-1]))
     
-    header = ['Task id'].extend([f'z{i}' for i in range(len(all_z[0][0]))])
-    with open("./latent/"+exp_id+".csv", "w") as f:
+    all_z = np.asarray(all_z)
+    header = ['Task id']
+    header.extend([f'z{i}' for i in range(len(all_z[0][0]))])
+    with open("./latent/" + exp_id + ".csv", "w") as f:
         f_csv = csv.writer(f)
         f_csv.writerow(header)
-        for idx in len(all_z):
+        for idx in range(len(all_z)):
             for z in all_z[idx]:
-                row = z.insert(0, idx)
+                row = np.insert(z, 0, idx)
                 f_csv.writerow(row)
     print("z value saved.")
     
-    all_z = np.asarray(all_z)
     plt.figure(0)
     # plt.xlim(-5,5)
     # plt.ylim(-5,5)
@@ -141,6 +142,8 @@ def sim_policy(variant, video_path, path_to_exp, num_trajs=1, deterministic=Fals
     plt.savefig("./images/" + exp_id + "/z_1.png")
     
     print("z images saved.")
+    
+    print("Make videos.")
     
     if save_video:
         # save frames to file temporarily

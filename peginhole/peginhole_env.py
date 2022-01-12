@@ -264,8 +264,8 @@ class PeginHole(SingleArmEnv):
         _peg_quat = convert_quat(np.array(self.sim.data.body_xquat[self.peg_body_id]), to="xyzw")
         _theta = 2 * np.arccos(_peg_quat[-1])
         _direc = normalize(_peg_quat[:3])
-        _theta_z = _theta * _direc[1]
-        reward -= np.abs(_theta_z - np.pi) * 1000
+        _theta_z = _theta * _direc[0]
+        reward -= np.abs(_theta_z - np.pi) * 100
         
         if self.reward_scale:
             reward *= self.reward_scale/10
@@ -458,21 +458,10 @@ if __name__ == "__main__":
         # action = get_policy_action(obs)
         # print(action)
         action = np.zeros(6)
-        # if not env._check_success():
-        #     action = np.asarray([0,0,-1,0,0,0])
         obs, r, done, _ = env.step(action)
-        # print(action)
         print(env.get_peg_pos_to_hole())
-        # peg_quat = obs['peg_quat']
+        print(r)
         # print(peg_quat)
-        theta = 2 * np.arccos(peg_quat[-1])
-        direc = normalize(peg_quat[:3])
-        theta_z = theta * direc[1]
-        # print(theta_z)
-        # print(r, end='\n\n')
-        # image_arr = env.sim.render(width=3000, height=2000, camera_name=None)
-        # image = Image.fromarray(np.flipud(image_arr))
-        # image.save(os.path.join(tmp_dir, '%06d.jpg' % i))
         env.render()
         # pdb.set_trace()
         
